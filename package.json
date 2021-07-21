@@ -1,0 +1,31 @@
+{
+  "name": "km-address-picker",
+  "version": "1.1.0",
+  "private": false,
+  "description": "vue picker element",
+  "keyword": "vue picker element 三级联动",
+  "author": "xiaowei",
+  "license": "MIT",
+  "main": "lib/km-address-picker.umd.min.js",
+  "library": "vue table element",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lib": "vue-cli-service build --target lib --name km-address-picker --dest lib ./packages/index.js"
+  },
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "element-ui": "^2.15.3",
+    "vue": "^2.6.11"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
