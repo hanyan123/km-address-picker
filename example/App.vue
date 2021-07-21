@@ -5,7 +5,8 @@
       v-model="address"
       valueKey="areacode"
       labelKey="areaname"
-      valueType="value"
+      valueType="code"
+      :default-value="defaultValue"
       :level="3"
       :map-json="mapJson"
     />
@@ -23,7 +24,8 @@ export default {
   data () {
     return {
       msg: '1213231313',
-      address: []
+      address: ["130000", "130200", "130203"],
+      defaultValue: ["130000", "130200", "130203"]
     }
   },
   computed: {

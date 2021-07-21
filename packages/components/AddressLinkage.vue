@@ -136,7 +136,50 @@ export default {
         this.$set(this.values, 2, {[this.labelKey]: area[this.labelKey], [this.valueKey]: this.area})
       }
       this.$emit('input', this.values)
-      
+    }
+  },
+  watch: {
+    value: {
+      handler(val) {
+        // 数据更新完以后执行
+        this.$nextTick(() => {
+          if (this.valueType === "code") {
+            if (val[0]) {
+              this.province = val[0]
+              this.cityOptions = this.provinceOptions.find(item => {
+                return item[this.valueKey] === val[0]
+              }).subarea
+            }
+            if (val[1]) {
+              this.city = val[1]
+              this.areaOptions = this.cityOptions.find(item => {
+                return item[this.valueKey] === val[1]
+              }).subarea
+            }
+            if (val[2]) {
+              this.area = val[2]
+            }
+          } else if (this.valueType === "value") {
+            if (val[0]) {
+              this.province = val[0][this.valueKey]
+              this.cityOptions = this.provinceOptions.find(item => {
+                return item[this.valueKey] === val[0][this.valueKey]
+              }).subarea
+            }
+            if (val[1]) {
+              this.city = val[1][this.valueKey]
+              this.areaOptions = this.cityOptions.find(item => {
+                return item[this.valueKey] === val[1][this.valueKey]
+              }).subarea
+            }
+            if (val[2]) {
+              this.area = val[2][this.valueKey]
+            }
+          }
+          this.$emit('input', val)
+        })
+      },
+      immediate: true
     }
   }
 }
