@@ -1,7 +1,8 @@
 <template>
   <div class="address-box">
     <el-select
-      v-model="province"
+      v-if="level >= 1"
+      v-model="areaModel[0]"
       placeholder="请选择省"
       :size="size"
       @change="provinceChange"
@@ -14,7 +15,8 @@
       </el-option>
     </el-select>
     <el-select
-      v-model="city"
+      v-if="level >= 2"
+      v-model="areaModel[1]"
       placeholder="请选择市"
       :size="size"
       @change="cityChange"
@@ -28,8 +30,8 @@
       </el-option>
     </el-select>
     <el-select
-      v-if="level === 3"
-      v-model="area"
+      v-if="level >= 3"
+      v-model="areaModel[2]"
       :size="size"
       placeholder="请选择区/县"
       style="margin-left: 20px"
@@ -46,6 +48,12 @@
 </template>
 
 <script>
+import { cloneDeep } from 'lodash'
+const type = {
+  code: 'code',
+  value: 'value',
+  text: 'text'
+}
 export default {
   name: 'KmAddressPicker',
   props: {
@@ -67,11 +75,13 @@ export default {
     },
     size: {
       type: String,
-      default: 'small'
+      default: 'small',
+      validator: val => ['medium', 'small', 'mini'].indexOf(val) > -1
     },
     valueType: {
       type: String,
-      default: 'code' // code：编码，value：name + 编码
+      default: 'code', // code：编码，value：name + 编码
+      validator: val => ['code', 'value', 'text'].indexOf(val) > -1
     },
     level: {
       type: Number,
@@ -80,108 +90,82 @@ export default {
   },
   data () {
     return {
+      values: [],
       province: '',
       provinceOptions: [],
       city: '',
       cityOptions: [],
       area: '',
       areaOptions: [],
-      values: []
+      areaModel: ['', '', '']
     }
   },
   created() {
     this.provinceOptions = this.mapJson.data
+    this.setValues()
   },
   methods: {
     provinceChange(val) {
       this.city = ''
       this.area = ''
       this.areaOptions = []
-      let province = this.provinceOptions.find(item => {
-        return item[this.valueKey] === val
-      })
+      let province = this.findOptions(this.provinceOptions, val)
       this.cityOptions = province.subarea
       // 组合数据
-      if (this.valueType === 'code') {
-        this.values = [this.province]
-      } else if (this.valueType === 'value') {
-        this.values = [
-          {[this.labelKey]: province[this.labelKey], [this.valueKey]: this.province}
-        ]
-      }
-      this.$emit('input', this.values)
+      this.values = [
+        {[this.labelKey]: province[this.labelKey], [this.valueKey]: this.areaModel[0]}
+      ]
+      this.$emit('input', this.formateValues()[this.valueType])
     },
     cityChange(val) {
       this.area = ''
-      let city = this.cityOptions.find(item => {
-        return item[this.valueKey] === val
-      })
+      let city = this.findOptions(this.cityOptions, val)
       this.areaOptions = city.subarea
       // 组合数据
-      if (this.valueType === 'code') {
-        this.$set(this.values, 1, this.city)
-      } else if (this.valueType === 'value') {
-        this.$set(this.values, 1, {[this.labelKey]: city[this.labelKey], [this.valueKey]: this.city})
-      }
-      this.$emit('input', this.values)
+      this.$set(this.values, 1, {[this.labelKey]: city[this.labelKey], [this.valueKey]: this.areaModel[1]})
+      this.$emit('input', this.formateValues()[this.valueType])
     },
     areaChange(val) {
-      let area = this.areaOptions.find(item => {
-        return item[this.valueKey] === val
-      })
+      let area = this.findOptions(this.areaOptions, val)
+      // console.log(this.getOptions)
       // 组合数据
-      if (this.valueType === 'code') {
-        this.$set(this.values, 2, this.area)
-      } else if (this.valueType === 'value') {
-        this.$set(this.values, 2, {[this.labelKey]: area[this.labelKey], [this.valueKey]: this.area})
+      this.$set(this.values, 2, {[this.labelKey]: area[this.labelKey], [this.valueKey]: this.areaModel[2]})
+      this.$emit('input', this.formateValues()[this.valueType])
+    },
+
+    // 查找下级数据
+    findOptions(options, code) {
+      if (code) {
+        return options.find(item => item[this.valueKey] === code)
+      } else {
+        return []
       }
-      this.$emit('input', this.values)
+    },
+    formateValues() {
+      return {
+        [type['code']]: this.values.slice(0, this.level + 1).map(item => item[this.valueKey]),
+        [type['value']]: this.values.slice(0, this.level + 1).map(item => item),
+        [type['text']]: this.values.slice(0, this.level + 1).map(item => item[this.labelKey])
+      }
+    },
+    // 判断默认值是不是code
+    isCode(val) {
+      return typeof Number(val) === 'number'
+    },
+    // 组件初始化时设置默认值
+    setValues() {
+      if (this.value.length) {
+        this.areaModel = cloneDeep(this.value)
+        let codeFlag = this.value.every(item => this.isCode(item))
+        if (codeFlag) {
+          let province = this.areaModel[0] ? this.findOptions(this.provinceOptions, this.areaModel[0]) : {}
+          this.cityOptions = province.subarea
+          let city = this.areaModel[1] ? this.findOptions(this.cityOptions, this.areaModel[1]) : {}
+          this.areaOptions = city.subarea
+        }
+      }
     }
   },
-  watch: {
-    value: {
-      handler(val) {
-        // 数据更新完以后执行
-        this.$nextTick(() => {
-          if (this.valueType === "code") {
-            if (val[0]) {
-              this.province = val[0]
-              this.cityOptions = this.provinceOptions.find(item => {
-                return item[this.valueKey] === val[0]
-              }).subarea
-            }
-            if (val[1]) {
-              this.city = val[1]
-              this.areaOptions = this.cityOptions.find(item => {
-                return item[this.valueKey] === val[1]
-              }).subarea
-            }
-            if (val[2]) {
-              this.area = val[2]
-            }
-          } else if (this.valueType === "value") {
-            if (val[0]) {
-              this.province = val[0][this.valueKey]
-              this.cityOptions = this.provinceOptions.find(item => {
-                return item[this.valueKey] === val[0][this.valueKey]
-              }).subarea
-            }
-            if (val[1]) {
-              this.city = val[1][this.valueKey]
-              this.areaOptions = this.cityOptions.find(item => {
-                return item[this.valueKey] === val[1][this.valueKey]
-              }).subarea
-            }
-            if (val[2]) {
-              this.area = val[2][this.valueKey]
-            }
-          }
-          this.$emit('input', val)
-        })
-      },
-      immediate: true
-    }
-  }
 }
 </script>
 
