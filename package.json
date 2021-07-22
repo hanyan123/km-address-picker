@@ -1,6 +1,6 @@
 {
   "name": "km-address-picker",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": false,
   "description": "vue picker element",
   "keyword": "vue picker element 三级联动",

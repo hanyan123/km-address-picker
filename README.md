@@ -38,6 +38,19 @@ Vue.use(kmAddressPicker)
   :level="3"
   :map-json="mapJson"
 />
+// address: {
+//  type: Array,
+//  default: []
+// }
+
+data () {
+  return {
+    // 默认值
+    address: ["130000", "130200", "130203"],
+    // 初始值
+    address: [],
+  }
+},
 
 ```
 

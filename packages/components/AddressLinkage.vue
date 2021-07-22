@@ -143,9 +143,15 @@ export default {
     },
     formateValues() {
       return {
-        [type['code']]: this.values.slice(0, this.level + 1).map(item => item[this.valueKey]),
-        [type['value']]: this.values.slice(0, this.level + 1).map(item => item),
-        [type['text']]: this.values.slice(0, this.level + 1).map(item => item[this.labelKey])
+        [type.code]: this.values
+            .slice(0, this.level + 1)
+            .map(item => item[this.valueKey]),
+        [type.value]: this.values
+            .slice(0, this.level + 1)
+            .map(item => item),
+        [type.text]: this.values
+            .slice(0, this.level + 1)
+            .map(item => item[this.labelKey])
       }
     },
     // 判断默认值是不是code
@@ -156,7 +162,8 @@ export default {
     setValues() {
       if (this.value.length) {
         this.areaModel = cloneDeep(this.value)
-        let codeFlag = this.value.every(item => this.isCode(item))
+        let codeFlag = this.value
+                        .every(item => this.isCode(item))
         if (codeFlag) {
           let province = this.areaModel[0] ? this.findOptions(this.provinceOptions, this.areaModel[0]) : {}
           this.cityOptions = province.subarea
