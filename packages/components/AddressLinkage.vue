@@ -80,7 +80,7 @@ export default {
     },
     valueType: {
       type: String,
-      default: 'code', // code：编码，value：name + 编码
+      default: 'code', // code：编码，value：name + 编码 text纯文字
       validator: val => ['code', 'value', 'text'].indexOf(val) > -1
     },
     level: {
@@ -106,8 +106,8 @@ export default {
   },
   methods: {
     provinceChange(val) {
-      this.city = ''
-      this.area = ''
+      this.areaModel[1] = ''
+      this.areaModel[2] = ''
       this.areaOptions = []
       let province = this.findOptions(this.provinceOptions, val)
       this.cityOptions = province.subarea
@@ -118,7 +118,7 @@ export default {
       this.$emit('input', this.formateValues()[this.valueType])
     },
     cityChange(val) {
-      this.area = ''
+      this.areaModel[2] = ''
       let city = this.findOptions(this.cityOptions, val)
       this.areaOptions = city.subarea
       // 组合数据
@@ -127,7 +127,6 @@ export default {
     },
     areaChange(val) {
       let area = this.findOptions(this.areaOptions, val)
-      // console.log(this.getOptions)
       // 组合数据
       this.$set(this.values, 2, {[this.labelKey]: area[this.labelKey], [this.valueKey]: this.areaModel[2]})
       this.$emit('input', this.formateValues()[this.valueType])
@@ -158,17 +157,45 @@ export default {
     isCode(val) {
       return typeof Number(val) === 'number'
     },
-    // 组件初始化时设置默认值
+    // 组件初始化时设置默认值 根据v-model的值初始化值
     setValues() {
       if (this.value.length) {
         this.areaModel = cloneDeep(this.value)
+        if (this.areaModel[0]) {
+          let province = this.findOptions(this.provinceOptions, this.areaModel[0])
+          this.cityOptions = province.subarea
+          // 组合数据
+          this.values = [
+            {[this.labelKey]: province[this.labelKey], [this.valueKey]: this.areaModel[0]}
+          ]
+          this.$emit('input', this.formateValues()[this.valueType])
+        }
+
+        if (this.areaModel[1]) {
+          let city = this.findOptions(this.cityOptions, this.areaModel[1])
+          this.areaOptions = city.subarea
+          // 组合数据
+          this.$set(this.values, 1, {[this.labelKey]: city[this.labelKey], [this.valueKey]: this.areaModel[1]})
+          this.$emit('input', this.formateValues()[this.valueType])
+        }
+
+        if (this.areaModel[2]) {
+          let area = this.findOptions(this.areaOptions, this.areaModel[2])
+          // 组合数据
+          this.$set(this.values, 2, {[this.labelKey]: area[this.labelKey], [this.valueKey]: this.areaModel[2]})
+          this.$emit('input', this.formateValues()[this.valueType])
+        }
         let codeFlag = this.value
                         .every(item => this.isCode(item))
         if (codeFlag) {
-          let province = this.areaModel[0] ? this.findOptions(this.provinceOptions, this.areaModel[0]) : {}
-          this.cityOptions = province.subarea
-          let city = this.areaModel[1] ? this.findOptions(this.cityOptions, this.areaModel[1]) : {}
-          this.areaOptions = city.subarea
+          if (this.level >= 2) {
+            let province = this.areaModel[0] ? this.findOptions(this.provinceOptions, this.areaModel[0]) : {}
+            this.cityOptions = province.subarea
+          }
+          if (this.level >= 3) {
+            let city = this.areaModel[1] ? this.findOptions(this.cityOptions, this.areaModel[1]) : {}
+            this.areaOptions = city.subarea
+          }          
         }
       }
     }

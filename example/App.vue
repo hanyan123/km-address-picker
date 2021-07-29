@@ -25,7 +25,7 @@ export default {
     return {
       msg: '1213231313',
       address: ["130000", "130200", "130203"],
-      defaultValue: ["130000", "130200", "130203"]
+      defaultValue: ["130000", "130200", "130203"]           
     }
   },
   computed: {
